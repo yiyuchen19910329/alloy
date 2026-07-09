@@ -1,39 +1,116 @@
-# ⚡ Intelligence-Foundry
+<!-- Replace <your-github-username> with your actual GitHub username, then this badge goes live. -->
+![CI](https://github.com/<your-github-username>/insight-copilot/actions/workflows/ci.yml/badge.svg)
 
-> **Advanced Engineering Hub for Model Synthesis, Evolutionary Optimization, and Robust AI Systems.**
+# ⚡ Insight Copilot
 
-This repository serves as a professional "foundry" for developing high-reliability AI systems tailored for critical infrastructure. It hosts two primary initiatives:
-1. **ALLOY**: A Neuro-Symbolic NLP framework for Power Grid Monitoring.
-2. **EVO-MERGE**: Experiments in evolutionary model merging and architecture optimization.
+> A neuro-symbolic diagnostic layer for power-grid telemetry — turning noisy operational logs into auditable, root-cause insight.
+
+**Insight Copilot** is the reference implementation of **ALLOY**, a neuro-symbolic framework that pairs the language ability of LLMs with deterministic, verifiable constraints. The target problem: in industrial grid operations, raw LLM output is not trustworthy enough for high-stakes decisions. ALLOY's thesis is that a probabilistic model becomes deployable only when a symbolic layer bounds and audits what it produces.
+
+This repository is under **early, active development**. The section below states honestly what exists today versus what is planned — nothing here is claimed as finished unless it is.
 
 ---
 
-## 🛠 Project ALLOY: Industrial Intelligence for Power Grid Systems
+## 📍 Status
 
-**ALLOY** (Neuro-Symbolic Synthesis) is a high-performance framework designed for the real-time diagnostic analysis of power grid telemetry. It solves the critical problem of "Alert Fatigue" by transforming thousands of raw, noisy logs into actionable engineering insights.
+| Area | State |
+| --- | --- |
+| Project infrastructure | ✅ **Built** |
+| Data & modeling core | 🚧 **In progress** |
+| ALLOY inference stack | 📋 **Planned** |
+| EvoMerge research track | 📋 **Planned (separate repository)** |
 
-### 🚀 Technical Pillars
+**Built today**
+- Reproducible environment: `uv`-managed dependencies, pinned Python 3.12, committed lockfile.
+- Production-grade container: multi-stage `Dockerfile` (non-root, healthcheck), `docker-compose`.
+- Quality gate: `ruff` (lint + format), `mypy` (strict), `pytest`, `pre-commit` hooks — all green locally.
+- Continuous integration: GitHub Actions running lint, type-check, test, and a `docker build` gate.
 
-*   **Domain Adaptation (Fine-Tuning):** Specialized training on power grid logs and engineering reports (ERCOT, IEEE datasets) to master technical jargon like *Phasors*, *Busbars*, and *Voltage Surges*.
-*   **Inference Engineering:** Built for mission-critical latency. Optimized via **vLLM**, **4-bit Quantization**, and **KV-Caching** to ensure sub-second response times during grid event cascades.
-*   **Neuro-Symbolic Constraints:** Fuses the probabilistic reasoning of LLMs with deterministic "hard" constraints. Uses specialized **Classification Heads** to enforce output boundaries and eliminate hallucinations.
-*   **High-Throughput Pipeline:** Leverages Hugging Face `Transformers` and `Accelerate` to process massive telemetry streams in parallel.
+**In progress**
+- PyTorch modeling fundamentals and the deterministic data layer (synthetic telemetry → DuckDB → dbt).
 
-### 🔬 Why ALLOY?
+**Planned** — see [Roadmap](#-roadmap). Everything below in *Design Goals* describes the intended architecture, not shipped features.
 
-In industrial settings, standard LLMs are often unreliable. **ALLOY** is built differently:
-1.  **Semantic De-noising:** Aggregates thousands of redundant alerts into a single root-cause diagnosis.
-2.  **Contextual Awareness:** Correlates real-time sensor data with historical maintenance logs to identify equipment failure signatures *before* they reach a critical threshold.
-3.  **Audit-Ready Reliability:** Every output is constrained by symbolic logic, making it suitable for high-stakes utility operations.
+---
+
+## 🎯 Design Goals (target architecture)
+
+These are the design targets for ALLOY. They are **not yet implemented**; they define where the project is headed.
+
+- **Neuro-symbolic constraints.** Fuse LLM reasoning with deterministic "hard" rules. Use classification heads and rule checks to bound outputs and suppress hallucination in a way that can be audited after the fact.
+- **Domain adaptation.** Fine-tune on grid logs and engineering reports (e.g. ERCOT / IEEE datasets) so the model handles domain vocabulary — phasors, busbars, voltage surges — rather than generic text.
+- **Inference engineering.** Target sub-second latency under event cascades via vLLM serving, 4-bit quantization, and KV-caching.
+- **Semantic de-noising.** Aggregate large volumes of redundant alerts into a single root-cause diagnosis instead of forwarding raw noise ("alert fatigue").
+- **Audit-ready output.** Every response is constrained by the symbolic layer, with the reasoning traceable — a prerequisite for regulated, high-stakes operations.
 
 ---
 
 ## 📂 Repository Structure
 
 ```text
-Intelligence-Foundry/
-├── projects/
-│   ├── alloy/          # Neuro-Symbolic Grid Monitoring Framework
-│   └── evo-merge/      # Model Merging & Evolutionary Experiments
-├── core/               # Shared Utilities (Preprocessing, Training Loops, Accelerate)
-└── docs/               # Technical Specifications & Research Notes
+insight-copilot/
+├── src/
+│   └── insight_copilot/     # application package
+├── tests/                   # pytest suite
+├── infra/
+│   └── gcp/                 # Terraform (GCP, remote state) — scaffold
+├── data/                    # datasets (gitignored)
+├── notebooks/               # exploration
+├── docs/                    # technical notes & specifications
+├── Dockerfile               # multi-stage, non-root, healthcheck
+├── docker-compose.yml
+└── pyproject.toml           # single source of truth for deps & tooling
+```
+
+---
+
+## 🚀 Getting Started
+
+Requires [`uv`](https://docs.astral.sh/uv/) and Python 3.12 (uv can install it for you).
+
+```bash
+# 1. Clone
+git clone https://github.com/<your-github-username>/insight-copilot.git
+cd insight-copilot
+
+# 2. Create the environment from the lockfile (bit-for-bit reproducible)
+uv sync
+
+# 3. Install the pre-commit quality hooks
+uv run pre-commit install
+
+# 4. Run the checks
+uv run ruff check .
+uv run mypy src
+uv run pytest
+```
+
+The container image builds today (`docker build -t insight-copilot .`). The runnable service entrypoint (`src/main.py` + `/health`) is pending — see the roadmap.
+
+---
+
+## 🛠 Tech Stack
+
+**Infrastructure (in use):** uv · Docker (multi-stage) · GitHub Actions · Terraform · GCP
+**Quality (in use):** ruff · mypy · pytest · pre-commit
+**Modeling (planned):** PyTorch · Hugging Face Transformers · vLLM · DuckDB · dbt
+
+---
+
+## 🗺 Roadmap
+
+- [x] Reproducible infra, container, and CI/CD baseline
+- [ ] Deterministic data layer: synthetic telemetry → DuckDB → dbt
+- [ ] API entrypoint with `/health` and core inference route
+- [ ] Domain fine-tuning on grid corpora
+- [ ] Neuro-symbolic constraint layer (classification heads + rule checks)
+- [ ] Inference optimization (quantization, KV-cache, vLLM serving)
+- [ ] Terraform-provisioned deployment
+
+*EvoMerge (evolutionary model merging) is a related research track developed in a separate repository; its integration with ALLOY is intentionally undecided pending experimental results.*
+
+---
+
+## 📄 License
+
+TBD.

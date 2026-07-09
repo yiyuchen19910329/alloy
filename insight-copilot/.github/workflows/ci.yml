@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # ── Job 1：品質閘門(lint + 格式 + 型別 + 測試)──────────────
+  quality:
+    name: lint · format · type-check · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        # 釘死完整版本標籤(不能用 @v8，供應鏈安全)
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true          # 快取依賴,後續 CI 更快
+
+      - name: Sync deps (fail if lockfile stale)
+        run: uv sync --locked --dev   # --locked：lock 檔過期就讓 CI 紅燈
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy src
+
+      - name: Pytest
+        run: uv run pytest -q
+
+  # ── Job 2：docker-build 閘門(你系統指令特別要的)────────────
+  docker-build:
+    name: docker build gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        run: docker build -t insight-copilot:ci --target runtime .

@@ -1,0 +1,45 @@
+[project]
+name = "insight-copilot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Quinn", email = "quinn.c.3999@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.139.0",
+    "uvicorn[standard]>=0.51.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.28,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.2.0",
+    "pre-commit>=4.6.0",
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+]
+
+# ── ruff：linter + formatter --Ruff 讓大家寫出來的程式碼看起來都像出自同一個人之手，乾乾淨淨
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+# ── mypy：靜態型別檢查 --Mypy 強迫你把「這盒子要裝什麼」講清楚，這樣以後別人才不會開錯箱子
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+# ── pytest --成品測試員
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
